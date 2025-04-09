@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BoostMe - Productivité & Bien-être</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                500: "#8b5cf6",
+                600: "#7c3aed",
+              },
+              secondary: {
+                500: "#f59e0b",
+                600: "#d97706",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .mascotte {
+        animation: float 3s ease-in-out infinite;
+      }
+      @keyframes float {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-12px);
+        }
+      }
+      .progress-ring__circle {
+        transition: stroke-dashoffset 0.5s ease;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+      }
+      .focus-mode {
+        filter: grayscale(80%) brightness(0.8);
+        pointer-events: none;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gradient-to-br from-purple-50 to-blue-50 min-h-screen p-4 font-sans"
+  >
+    <!-- Overlay de mode focus -->
+    <div
+      id="focusOverlay"
+      class="fixed inset-0 bg-black bg-opacity-70 z-40 hidden flex-col items-center justify-center"
+    >
+      <div class="text-white text-center mb-8">
+        <h2 class="text-3xl font-bold mb-2">Mode Focus Activé</h2>
+        <div id="focusTimer" class="text-4xl font-mono">25:00</div>
+        <p class="mt-4">Concentrez-vous sur votre tâche actuelle</p>
+      </div>
+      <button
+        id="endFocusBtn"
+        class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-xl text-lg font-medium transition-all"
+      >
+        Terminer la session
+      </button>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="max-w-6xl mx-auto">
+      <!-- Section Auth -->
+      <div
+        id="authSection"
+        class="flex flex-col lg:flex-row items-center justify-center min-h-[80vh] gap-8"
+      >
+        <!-- Section Connexion -->
+        <div
+          id="loginSection"
+          class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md"
+        >
+          <div class="text-center mb-2">
+            <img
+              src="images/ChatGPT Image 8 avr. 2025, 20_36_56.png"
+              alt="Mascotte BoostMe"
+              class="h-20 mascotte mx-auto mb-2"
+            />
+            <h2 class="text-2xl font-bold text-primary-600">
+              Connexion à BoostMe
+            </h2>
+            <p class="text-sm text-gray-500 mt-1">
+              Retrouvez votre productivité
+            </p>
+          </div>
+          <form onsubmit="handleLogin(event)" class="space-y-4 mt-6">
+            <div>
+              <label
+                for="email"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Email</label
+              >
+              <input
+                type="email"
+                id="email"
+                placeholder="votre@email.com"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition"
+              />
+            </div>
+            <div>
+              <label
+                for="password"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Mot de passe</label
+              >
+              <input
+                type="password"
+                id="password"
+                placeholder="••••••••"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition"
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-primary-500 hover:bg-primary-600 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Se connecter
+            </button>
+          </form>
+          <div class="mt-6 pt-4 border-t border-gray-100 text-center">
+            <p class="text-sm text-gray-600">
+              Pas encore de compte ?
+              <button
+                onclick="toggleAuth(false)"
+                class="text-primary-600 font-medium hover:underline"
+              >
+                Créer un compte
+              </button>
+            </p>
+          </div>
+        </div>
+
+        <!-- Section Création de compte -->
+        <div
+          id="registerSection"
+          class="hidden bg-white p-8 rounded-2xl shadow-lg w-full max-w-md"
+        >
+          <div class="text-center mb-2">
+            <img
+              src="images/ChatGPT Image 8 avr. 2025, 20_36_56.png"
+              alt="Mascotte BoostMe"
+              class="h-20 mascotte mx-auto mb-2"
+            />
+            <h2 class="text-2xl font-bold text-primary-600">
+              Rejoignez BoostMe
+            </h2>
+            <p class="text-sm text-gray-500 mt-1">
+              Commencez votre voyage vers la productivité
+            </p>
+          </div>
+          <form onsubmit="handleRegister(event)" class="space-y-4 mt-6">
+            <div>
+              <label
+                for="registerName"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Nom complet</label
+              >
+              <input
+                type="text"
+                id="registerName"
+                placeholder="Votre nom"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition"
+              />
+            </div>
+            <div>
+              <label
+                for="registerEmail"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Email</label
+              >
+              <input
+                type="email"
+                id="registerEmail"
+                placeholder="votre@email.com"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition"
+              />
+            </div>
+            <div>
+              <label
+                for="registerPassword"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >Mot de passe</label
+              >
+              <input
+                type="password"
+                id="registerPassword"
+                placeholder="••••••••"
+                required
+                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition"
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full bg-primary-500 hover:bg-primary-600 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z"
+                />
+              </svg>
+              Créer un compte
+            </button>
+          </form>
+          <div class="mt-6 pt-4 border-t border-gray-100 text-center">
+            <p class="text-sm text-gray-600">
+              Déjà inscrit ?
+              <button
+                onclick="toggleAuth(true)"
+                class="text-primary-600 font-medium hover:underline"
+              >
+                Se connecter
+              </button>
+            </p>
+          </div>
+        </div>
+
+        <!-- Présentation pour les nouveaux visiteurs -->
+        <div class="hidden lg:block max-w-md">
+          <div class="bg-white p-8 rounded-2xl shadow-lg">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">
+              Boostez votre productivité
+            </h2>
+            <ul class="space-y-4 text-gray-600">
+              <li class="flex items-start gap-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6 text-green-500 mt-0.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                <span>Mode focus pour bloquer les distractions</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6 text-green-500 mt-0.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                <span>Défis quotidiens personnalisés</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6 text-green-500 mt-0.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                <span>Suivi de vos progrès et statistiques</span>
+              </li>
+              <li class="flex items-start gap-3">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6 text-green-500 mt-0.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+                <span>Rappels de bien-être et pauses</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Dashboard -->
+      <div id="dashboardSection" class="hidden w-full">
+        <!-- Barre de navigation -->
+        <nav
+          class="bg-white shadow-md rounded-xl p-4 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4"
+        >
+          <div class="flex items-center gap-2">
+            <img
+              src="images/ChatGPT Image 8 avr. 2025, 20_36_56.png"
+              alt="Logo"
+              class="h-8"
+            />
+            <span class="text-xl font-bold text-primary-600">BoostMe</span>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <button
+              id="focusBtn"
+              class="flex items-center gap-2 bg-purple-100 hover:bg-purple-200 text-primary-600 px-4 py-2 rounded-lg transition-all"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Mode Focus
+            </button>
+
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <div
+                  id="userAvatar"
+                  class="w-9 h-9 rounded-full bg-primary-500 flex items-center justify-center text-white font-medium cursor-pointer"
+                ></div>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-700" id="userName">
+                  Utilisateur
+                </p>
+                <p class="text-xs text-gray-500">
+                  Niveau <span id="levelNav">1</span>
+                </p>
+              </div>
+              <button
+                onclick="logout()"
+                class="text-gray-500 hover:text-gray-700"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </nav>
+
+        <!-- Grille principale -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Colonne de gauche -->
+          <div class="space-y-6">
+            <!-- Progression -->
+            <div class="bg-white rounded-2xl shadow-md p-6">
+              <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-primary-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Votre progression
+              </h3>
+
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <span class="text-sm text-gray-500">Niveau</span>
+                  <div class="text-2xl font-bold text-primary-600" id="level">
+                    1
+                  </div>
+                </div>
+                <div class="relative w-16 h-16">
+                  <svg class="w-full h-full" viewBox="0 0 36 36">
+                    <path
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#e6e6e6"
+                      stroke-width="3"
+                    />
+                    <path
+                      id="xpProgressCircle"
+                      d="M18 2.0845
+                        a 15.9155 15.9155 0 0 1 0 31.831
+                        a 15.9155 15.9155 0 0 1 0 -31.831"
+                      fill="none"
+                      stroke="#8b5cf6"
+                      stroke-width="3"
+                      stroke-dasharray="0, 100"
+                    />
+                  </svg>
+                  <div
+                    class="absolute inset-0 flex items-center justify-center text-xs font-bold"
+                    id="xpPercentage"
+                  >
+                    0%
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="text-sm text-gray-500">XP</span>
+                  <div class="text-2xl font-bold text-primary-600" id="xp">
+                    0<span class="text-sm font-normal">/100</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <div class="flex justify-between text-sm text-gray-500 mb-1">
+                  <span>Tâches complétées</span>
+                  <span id="completedTasksCount">0</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    id="tasksProgress"
+                    class="bg-green-500 h-2 rounded-full"
+                    style="width: 0%"
+                  ></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Défis du jour -->
+            <div class="bg-white rounded-2xl shadow-md p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 text-secondary-500"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  Défis du jour
+                </h3>
+                <span
+                  class="text-xs bg-secondary-100 text-secondary-800 px-2 py-1 rounded-full"
+                  id="challengesProgress"
+                  >0/3</span
+                >
+              </div>
+
+              <div id="dailyChallenges" class="space-y-3">
+                <!-- Les défis seront générés dynamiquement ici -->
+              </div>
+
+              <button
+                id="generateChallengeBtn"
+                class="mt-4 w-full text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center justify-center gap-1"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                Nouveau défi
+              </button>
+            </div>
+
+            <!-- Rappel bien-être -->
+            <div class="bg-blue-50 rounded-2xl shadow-md p-6 text-center">
+              <img
+                src="https://i.imgur.com/jW5ZKzJ.png"
+                alt="Mascotte"
+                class="h-20 mascotte mx-auto mb-3"
+              />
+              <h4 class="font-medium text-gray-800 mb-1">
+                Bonjour <span id="userNameShort">Utilisateur</span> !
+              </h4>
+              <p class="text-sm text-gray-600 mb-4">
+                Je suis Lumo, ton coach bien-être !
+              </p>
+
+              <div
+                id="wellnessReminder"
+                class="mb-4 p-3 bg-white rounded-lg shadow-inner"
+              >
+                <p class="text-sm">💧 Pensez à boire de l'eau régulièrement</p>
+              </div>
+
+              <button
+                onclick="startBreathingExercise()"
+                class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Respiration guidée
+              </button>
+            </div>
+          </div>
+
+          <!-- Colonne centrale - Tâches -->
+          <div class="space-y-6">
+            <!-- Tâches du jour -->
+            <div class="bg-white rounded-2xl shadow-md p-6">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold flex items-center gap-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 text-primary-500"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                    <path
+                      fill-rule="evenodd"
+                      d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  Mes tâches
+                </h3>
+                <div class="flex gap-2">
+                  <button
+                    onclick="addTaskWithTimer()"
+                    class="bg-primary-500 hover:bg-primary-600 text-white p-2 rounded-lg transition-all"
+                    title="Ajouter avec minuteur"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onclick="addTask()"
+                    class="bg-primary-500 hover:bg-primary-600 text-white p-2 rounded-lg transition-all"
+                    title="Ajouter une tâche"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <div class="flex items-center gap-2 text-sm text-gray-500">
+                  <span>Aujourd'hui</span>
+                  <span class="flex-1 border-t border-gray-200"></span>
+                  <span id="todayDate"></span>
+                </div>
+              </div>
+
+              <ul id="todoList" class="space-y-2">
+                <!-- Les tâches seront ajoutées ici dynamiquement -->
+              </ul>
+
+              <div class="mt-4 text-sm text-gray-500 flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>Cliquez sur une tâche pour la modifier</span>
+              </div>
+            </div>
+
+            <!-- Minuteur Pomodoro -->
+            <div class="bg-white rounded-2xl shadow-md p-6">
+              <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-red-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Minuteur de productivité
+              </h3>
+
+              <div class="flex justify-center gap-4 mb-6">
+                <button
+                  data-minutes="25"
+                  class="pomodoro-btn bg-primary-100 text-primary-600 px-4 py-2 rounded-lg font-medium"
+                >
+                  25 min
+                </button>
+                <button
+                  data-minutes="50"
+                  class="pomodoro-btn bg-gray-100 text-gray-600 px-4 py-2 rounded-lg font-medium"
+                >
+                  50 min
+                </button>
+                <button
+                  data-minutes="90"
+                  class="pomodoro-btn bg-gray-100 text-gray-600 px-4 py-2 rounded-lg font-medium"
+                >
+                  90 min
+                </button>
+              </div>
+
+              <div class="text-center">
+                <div id="pomodoroTimer" class="text-5xl font-mono mb-4">
+                  25:00
+                </div>
+                <button
+                  id="startPomodoroBtn"
+                  class="bg-primary-500 hover:bg-primary-600 text-white px-8 py-3 rounded-xl text-lg font-medium transition-all w-full"
+                >
+                  Commencer
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Colonne de droite - Statistiques -->
+          <div class="space-y-6">
+            <!-- Statistiques -->
+            <div class="bg-white rounded-2xl shadow-md p-6">
+              <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-green-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"
+                  />
+                </svg>
+                Mes statistiques
+              </h3>
+
+              <div class="space-y-4">
+                <div>
+                  <div class="flex justify-between text-sm text-gray-500 mb-1">
+                    <span>Tâches cette semaine</span>
+                    <span id="weeklyTasks">0</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      id="weeklyTasksProgress"
+                      class="bg-blue-500 h-2 rounded-full"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between text-sm text-gray-500 mb-1">
+                    <span>Défis complétés</span>
+                    <span id="completedChallenges">0</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      id="challengesProgressBar"
+                      class="bg-secondary-500 h-2 rounded-full"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between text-sm text-gray-500 mb-1">
+                    <span>Sessions focus</span>
+                    <span id="focusSessions">0</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      id="focusSessionsProgress"
+                      class="bg-purple-500 h-2 rounded-full"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-6 pt-4 border-t border-gray-100">
+                <h4 class="text-sm font-medium text-gray-700 mb-2">
+                  Récompenses
+                </h4>
+                <div class="flex gap-2">
+                  <div class="badge bg-yellow-100 text-yellow-800">
+                    Débutant
+                  </div>
+                  <div class="badge bg-gray-100 text-gray-800 opacity-50">
+                    Productif
+                  </div>
+                  <div class="badge bg-gray-100 text-gray-800 opacity-50">
+                    Expert
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Historique récent -->
+            <div class="bg-white rounded-2xl shadow-md p-6">
+              <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5 text-gray-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Activité récente
+              </h3>
+
+              <ul id="recentActivity" class="space-y-3 text-sm">
+                <li class="flex items-start gap-2 text-gray-600">
+                  <div class="bg-green-100 p-1 rounded-full mt-0.5">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-3 w-3 text-green-600"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <span>Vous avez complété "Préparer la réunion"</span>
+                </li>
+                <li class="flex items-start gap-2 text-gray-600">
+                  <div class="bg-blue-100 p-1 rounded-full mt-0.5">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-3 w-3 text-blue-600"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <span>Session focus de 25 minutes</span>
+                </li>
+                <li class="flex items-start gap-2 text-gray-600">
+                  <div class="bg-secondary-100 p-1 rounded-full mt-0.5">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-3 w-3 text-secondary-600"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <span>Défi "Boire 1L d'eau" complété</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Variables globales
+      let currentUser = null;
+      let users = JSON.parse(localStorage.getItem("boostme_users")) || [];
+      let tasks =
+        JSON.parse(
+          localStorage.getItem(`boostme_tasks_${currentUser?.email}`)
+        ) || [];
+      let challenges =
+        JSON.parse(
+          localStorage.getItem(`boostme_challenges_${currentUser?.email}`)
+        ) || [];
+      let xp = 0;
+      let level = 1;
+      let completedTasks = 0;
+      let completedChallenges = 0;
+      let focusSessions = 0;
+      let pomodoroInterval;
+      let focusInterval;
+      let currentTimerMinutes = 25;
+
+      // Initialisation
+      document.addEventListener("DOMContentLoaded", function () {
+        updateDateDisplay();
+        setupPomodoroButtons();
+
+        // Vérifier si un utilisateur est déjà connecté
+        const loggedInUser = JSON.parse(
+          localStorage.getItem("boostme_current_user")
+        );
+        if (loggedInUser) {
+          currentUser = loggedInUser;
+          loadUserData();
+          showDashboard();
+        }
+      });
+
+      // Fonctions d'authentification
+      function toggleAuth(showLogin) {
+        document
+          .getElementById("loginSection")
+          .classList.toggle("hidden", !showLogin);
+        document
+          .getElementById("registerSection")
+          .classList.toggle("hidden", showLogin);
+      }
+
+      function handleRegister(event) {
+        event.preventDefault();
+        const name = document.getElementById("registerName").value;
+        const email = document.getElementById("registerEmail").value;
+        const password = document.getElementById("registerPassword").value;
+
+        // Vérifier si l'utilisateur existe déjà
+        if (users.some((u) => u.email === email)) {
+          alert("Un compte avec cet email existe déjà.");
+          return;
+        }
+
+        const newUser = {
+          name,
+          email,
+          password,
+          xp: 0,
+          level: 1,
+          completedTasks: 0,
+          completedChallenges: 0,
+          focusSessions: 0,
+          joinDate: new Date().toISOString(),
+        };
+
+        users.push(newUser);
+        localStorage.setItem("boostme_users", JSON.stringify(users));
+
+        alert(`Bienvenue ${name} ! Votre compte a été créé avec succès.`);
+        toggleAuth(true);
+
+        // Réinitialiser le formulaire
+        event.target.reset();
+      }
+
+      function handleLogin(event) {
+        event.preventDefault();
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        const user = users.find(
+          (u) => u.email === email && u.password === password
+        );
+        if (user) {
+          currentUser = user;
+          localStorage.setItem("boostme_current_user", JSON.stringify(user));
+          loadUserData();
+          showDashboard();
+        } else {
+          alert("Email ou mot de passe incorrect.");
+        }
+      }
+
+      function logout() {
+        currentUser = null;
+        localStorage.removeItem("boostme_current_user");
+        document.getElementById("dashboardSection").classList.add("hidden");
+        document.getElementById("authSection").classList.remove("hidden");
+        resetTimers();
+      }
+
+      // Fonctions du tableau de bord
+      function loadUserData() {
+        if (!currentUser) return;
+
+        // Charger les données utilisateur
+        xp = currentUser.xp || 0;
+        level = currentUser.level || 1;
+        completedTasks = currentUser.completedTasks || 0;
+        completedChallenges = currentUser.completedChallenges || 0;
+        focusSessions = currentUser.focusSessions || 0;
+
+        // Charger les tâches
+        tasks =
+          JSON.parse(
+            localStorage.getItem(`boostme_tasks_${currentUser.email}`)
+          ) || [];
+
+        // Charger les défis
+        challenges =
+          JSON.parse(
+            localStorage.getItem(`boostme_challenges_${currentUser.email}`)
+          ) || [];
+        if (challenges.length === 0) {
+          generateDailyChallenges();
+        }
+
+        // Mettre à jour l'interface
+        updateUserInfo();
+        renderTasks();
+        renderChallenges();
+        updateStats();
+      }
+
+      function showDashboard() {
+        document.getElementById("authSection").classList.add("hidden");
+        document.getElementById("dashboardSection").classList.remove("hidden");
+      }
+
+      function updateUserInfo() {
+        if (!currentUser) return;
+
+        document.getElementById("userName").textContent = currentUser.name;
+        document.getElementById("userNameShort").textContent =
+          currentUser.name.split(" ")[0];
+        document.getElementById("userAvatar").textContent = currentUser.name
+          .charAt(0)
+          .toUpperCase();
+        document.getElementById("level").textContent = level;
+        document.getElementById("levelNav").textContent = level;
+        document.getElementById("xp").textContent = `${xp}/100`;
+        document.getElementById("xpPercentage").textContent = `${xp}%`;
+        document.getElementById(
+          "completedTasksCount"
+        ).textContent = `${completedTasks} aujourd'hui`;
+
+        // Mettre à jour la barre de progression XP
+        const xpCircle = document.getElementById("xpProgressCircle");
+        if (xpCircle) {
+          const circumference = 2 * Math.PI * 15.9155;
+          const offset = circumference - (xp / 100) * circumference;
+          xpCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+          xpCircle.style.strokeDashoffset = offset;
+        }
+      }
+
+      function updateDateDisplay() {
+        const options = { weekday: "long", day: "numeric", month: "long" };
+        const today = new Date().toLocaleDateString("fr-FR", options);
+        document.getElementById("todayDate").textContent = today;
+      }
+
+      // Fonctions des tâches
+      function addTask() {
+        const taskText = prompt("Ajouter une nouvelle tâche :");
+        if (taskText) {
+          const newTask = {
+            id: Date.now(),
+            text: taskText,
+            completed: false,
+            createdAt: new Date().toISOString(),
+            timer: null,
+          };
+
+          tasks.push(newTask);
+          saveTasks();
+          renderTasks();
+        }
+      }
+
+      function addTaskWithTimer() {
+        const taskText = prompt("Ajouter une nouvelle tâche avec minuteur :");
+        if (!taskText) return;
+
+        const minutes = prompt("Durée en minutes (par défaut 25) :", "25");
+        const timerMinutes = parseInt(minutes) || 25;
+
+        const newTask = {
+          id: Date.now(),
+          text: taskText,
+          completed: false,
+          createdAt: new Date().toISOString(),
+          timer: timerMinutes,
+        };
+
+        tasks.push(newTask);
+        saveTasks();
+        renderTasks();
+      }
+
+      function editTask(taskId) {
+        const task = tasks.find((t) => t.id === taskId);
+        if (!task) return;
+
+        const newText = prompt("Modifier la tâche :", task.text);
+        if (newText && newText !== task.text) {
+          task.text = newText;
+          saveTasks();
+          renderTasks();
+        }
+      }
+
+      function toggleTaskCompletion(taskId) {
+        const task = tasks.find((t) => t.id === taskId);
+        if (!task) return;
+
+        task.completed = !task.completed;
+
+        if (task.completed) {
+          gainXP(10);
+          completedTasks++;
+          addActivity(`Vous avez complété "${task.text}"`, "task");
+        } else {
+          gainXP(-10);
+          completedTasks--;
+        }
+
+        saveTasks();
+        updateUserInfo();
+        renderTasks();
+      }
+
+      function deleteTask(taskId) {
+        tasks = tasks.filter((t) => t.id !== taskId);
+        saveTasks();
+        renderTasks();
+      }
+
+      function renderTasks() {
+        const todoList = document.getElementById("todoList");
+        todoList.innerHTML = "";
+
+        if (tasks.length === 0) {
+          todoList.innerHTML =
+            '<p class="text-sm text-gray-500 text-center py-4">Aucune tâche pour aujourd\'hui</p>';
+          return;
+        }
+
+        tasks.forEach((task) => {
+          const li = document.createElement("li");
+          li.className = `bg-gray-50 hover:bg-gray-100 px-4 py-3 rounded-lg flex items-start gap-3 cursor-pointer transition ${
+            task.completed ? "opacity-70" : ""
+          }`;
+
+          li.innerHTML = `
+            <div class="flex items-center h-5 mt-0.5">
+              <input 
+                type="checkbox" 
+                ${task.completed ? "checked" : ""}
+                onclick="event.stopPropagation(); toggleTaskCompletion(${
+                  task.id
+                })"
+                class="rounded text-primary-600 focus:ring-primary-500"
+              >
+            </div>
+            <div class="flex-1" onclick="editTask(${task.id})">
+              <div class="${
+                task.completed ? "line-through text-gray-500" : "text-gray-800"
+              }">${task.text}</div>
+              ${
+                task.timer
+                  ? `<div class="text-xs text-gray-500 mt-1">⏱ ${task.timer} min</div>`
+                  : ""
+              }
+            </div>
+            <button 
+              onclick="event.stopPropagation(); deleteTask(${task.id})"
+              class="text-gray-400 hover:text-red-500 transition"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          `;
+
+          todoList.appendChild(li);
+        });
+      }
+
+      function saveTasks() {
+        if (!currentUser) return;
+        localStorage.setItem(
+          `boostme_tasks_${currentUser.email}`,
+          JSON.stringify(tasks)
+        );
+      }
+
+      // Fonctions des défis
+      function generateDailyChallenges() {
+        const challengeTemplates = [
+          { text: "Boire 1L d'eau avant midi", xp: 15, completed: false },
+          { text: "Terminer 3 tâches avant 17h", xp: 20, completed: false },
+          {
+            text: "Pas de réseaux sociaux pendant 2h",
+            xp: 25,
+            completed: false,
+          },
+          { text: "Faire 10 minutes de méditation", xp: 15, completed: false },
+          { text: "Marcher 5000 pas aujourd'hui", xp: 20, completed: false },
+          { text: "Lire 10 pages d'un livre", xp: 15, completed: false },
+        ];
+
+        // Mélanger les défis et en prendre 3
+        challenges = challengeTemplates
+          .sort(() => 0.5 - Math.random())
+          .slice(0, 3)
+          .map((challenge) => ({
+            ...challenge,
+            id: Date.now() + Math.floor(Math.random() * 1000),
+          }));
+
+        saveChallenges();
+      }
+
+      function generateNewChallenge() {
+        const remainingChallenges = challenges.filter((c) => !c.completed);
+        if (remainingChallenges.length >= 3) {
+          alert(
+            "Vous avez déjà 3 défis en cours. Complétez-en un avant d'en ajouter un nouveau."
+          );
+          return;
+        }
+
+        const newChallenges = [
+          { text: "Faire 5 minutes d'étirements", xp: 10, completed: false },
+          {
+            text: "Écrire 3 choses positives de la journée",
+            xp: 10,
+            completed: false,
+          },
+          { text: "Appeler un proche", xp: 15, completed: false },
+          {
+            text: "Prendre 15 minutes de pause sans écran",
+            xp: 15,
+            completed: false,
+          },
+        ];
+
+        const randomChallenge =
+          newChallenges[Math.floor(Math.random() * newChallenges.length)];
+        challenges.push({ ...randomChallenge, id: Date.now() });
+
+        saveChallenges();
+        renderChallenges();
+      }
+
+      function toggleChallengeCompletion(challengeId) {
+        const challenge = challenges.find((c) => c.id === challengeId);
+        if (!challenge) return;
+
+        challenge.completed = !challenge.completed;
+
+        if (challenge.completed) {
+          gainXP(challenge.xp);
+          completedChallenges++;
+          addActivity(`Défi "${challenge.text}" complété`, "challenge");
+        } else {
+          gainXP(-challenge.xp);
+          completedChallenges--;
+        }
+
+        saveChallenges();
+        updateUserInfo();
+        renderChallenges();
+      }
+
+      function renderChallenges() {
+        const container = document.getElementById("dailyChallenges");
+        container.innerHTML = "";
+
+        const completedCount = challenges.filter((c) => c.completed).length;
+        document.getElementById(
+          "challengesProgress"
+        ).textContent = `${completedCount}/${challenges.length}`;
+
+        if (challenges.length === 0) {
+          container.innerHTML =
+            '<p class="text-sm text-gray-500 text-center py-4">Aucun défi aujourd\'hui</p>';
+          return;
+        }
+
+        challenges.forEach((challenge) => {
+          const div = document.createElement("div");
+          div.className = `p-3 rounded-lg flex items-start gap-3 ${
+            challenge.completed
+              ? "bg-green-50"
+              : "bg-white border border-gray-200"
+          }`;
+
+          div.innerHTML = `
+            <div class="flex items-center h-5 mt-0.5">
+              <input 
+                type="checkbox" 
+                ${challenge.completed ? "checked" : ""}
+                onclick="toggleChallengeCompletion(${challenge.id})"
+                class="rounded text-secondary-600 focus:ring-secondary-500"
+              >
+            </div>
+            <div class="flex-1 ${
+              challenge.completed
+                ? "line-through text-gray-500"
+                : "text-gray-800"
+            }">
+              ${challenge.text}
+              <div class="text-xs mt-1 text-gray-500">${challenge.xp} XP</div>
+            </div>
+          `;
+
+          container.appendChild(div);
+        });
+      }
+
+      function saveChallenges() {
+        if (!currentUser) return;
+        localStorage.setItem(
+          `boostme_challenges_${currentUser.email}`,
+          JSON.stringify(challenges)
+        );
+      }
+
+      // Fonctions XP et niveaux
+      function gainXP(amount) {
+        xp = Math.max(0, xp + amount);
+
+        if (xp >= 100) {
+          level++;
+          xp -= 100;
+          addActivity(`Niveau ${level} atteint !`, "level");
+        }
+
+        // Mettre à jour les données utilisateur
+        if (currentUser) {
+          currentUser.xp = xp;
+          currentUser.level = level;
+          currentUser.completedTasks = completedTasks;
+          currentUser.completedChallenges = completedChallenges;
+          localStorage.setItem(
+            "boostme_current_user",
+            JSON.stringify(currentUser)
+          );
+
+          // Mettre à jour dans le tableau users
+          const userIndex = users.findIndex(
+            (u) => u.email === currentUser.email
+          );
+          if (userIndex !== -1) {
+            users[userIndex] = currentUser;
+            localStorage.setItem("boostme_users", JSON.stringify(users));
+          }
+        }
+
+        updateUserInfo();
+      }
+
+      // Fonctions de statistiques
+      function updateStats() {
+        document.getElementById("weeklyTasks").textContent = `${
+          completedTasks * 2
+        }`;
+        document.getElementById("completedChallenges").textContent =
+          completedChallenges;
+        document.getElementById("focusSessions").textContent = focusSessions;
+
+        document.getElementById(
+          "weeklyTasksProgress"
+        ).style.width = `${Math.min(100, completedTasks * 10)}%`;
+        document.getElementById(
+          "challengesProgressBar"
+        ).style.width = `${Math.min(100, completedChallenges * 30)}%`;
+        document.getElementById(
+          "focusSessionsProgress"
+        ).style.width = `${Math.min(100, focusSessions * 20)}%`;
+      }
+
+      function addActivity(text, type) {
+        const activityList = document.getElementById("recentActivity");
+        const iconClass =
+          {
+            task: "bg-green-100 text-green-600",
+            challenge: "bg-secondary-100 text-secondary-600",
+            focus: "bg-blue-100 text-blue-600",
+            level: "bg-purple-100 text-purple-600",
+          }[type] || "bg-gray-100 text-gray-600";
+
+        const iconSvg =
+          {
+            task: '<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />',
+            challenge:
+              '<path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />',
+            focus:
+              '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />',
+            level:
+              '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />',
+          }[type] || "";
+
+        const li = document.createElement("li");
+        li.className = "flex items-start gap-2 text-gray-600 animate-fade-in";
+        li.innerHTML = `
+          <div class="${iconClass} p-1 rounded-full mt-0.5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+              ${iconSvg}
+            </svg>
+          </div>
+          <span>${text}</span>
+        `;
+
+        // Ajouter en haut de la liste
+        if (activityList.firstChild) {
+          activityList.insertBefore(li, activityList.firstChild);
+        } else {
+          activityList.appendChild(li);
+        }
+
+        // Limiter à 5 éléments
+        if (activityList.children.length > 5) {
+          activityList.removeChild(activityList.lastChild);
+        }
+      }
+
+      // Fonctions du minuteur Pomodoro
+      function setupPomodoroButtons() {
+        document.querySelectorAll(".pomodoro-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            // Retirer la classe active de tous les boutons
+            document.querySelectorAll(".pomodoro-btn").forEach((b) => {
+              b.classList.remove("bg-primary-100", "text-primary-600");
+              b.classList.add("bg-gray-100", "text-gray-600");
+            });
+
+            // Ajouter la classe active au bouton cliqué
+            this.classList.remove("bg-gray-100", "text-gray-600");
+            this.classList.add("bg-primary-100", "text-primary-600");
+
+            // Mettre à jour le minuteur
+            currentTimerMinutes = parseInt(this.dataset.minutes);
+            updatePomodoroDisplay(currentTimerMinutes * 60);
+          });
+        });
+      }
+
+      function startPomodoro() {
+        const startBtn = document.getElementById("startPomodoroBtn");
+        startBtn.textContent = "En cours...";
+        startBtn.disabled = true;
+
+        let secondsLeft = currentTimerMinutes * 60;
+        updatePomodoroDisplay(secondsLeft);
+
+        pomodoroInterval = setInterval(() => {
+          secondsLeft--;
+          updatePomodoroDisplay(secondsLeft);
+
+          if (secondsLeft <= 0) {
+            clearInterval(pomodoroInterval);
+            startBtn.textContent = "Terminé !";
+
+            // Notification
+            if (Notification.permission === "granted") {
+              new Notification("Session Pomodoro terminée", {
+                body: `Votre session de ${currentTimerMinutes} minutes est terminée. Prenez une pause !`,
+                icon: "https://i.imgur.com/jW5ZKzJ.png",
+              });
+            } else if (Notification.permission !== "denied") {
+              Notification.requestPermission().then((permission) => {
+                if (permission === "granted") {
+                  new Notification("Session Pomodoro terminée", {
+                    body: `Votre session de ${currentTimerMinutes} minutes est terminée. Prenez une pause !`,
+                    icon: "https://i.imgur.com/jW5ZKzJ.png",
+                  });
+                }
+              });
+            }
+
+            // Ajouter XP et activité
+            gainXP(5);
+            focusSessions++;
+            addActivity(
+              `Session focus de ${currentTimerMinutes} minutes`,
+              "focus"
+            );
+            updateStats();
+
+            // Réinitialiser après 3 secondes
+            setTimeout(() => {
+              startBtn.textContent = "Commencer";
+              startBtn.disabled = false;
+              updatePomodoroDisplay(currentTimerMinutes * 60);
+            }, 3000);
+          }
+        }, 1000);
+      }
+
+      function updatePomodoroDisplay(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        document.getElementById("pomodoroTimer").textContent = `${minutes
+          .toString()
+          .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
+      }
+
+      // Fonctions du mode Focus
+      function toggleFocusMode() {
+        const focusBtn = document.getElementById("focusBtn");
+        const isFocusActive = focusBtn.classList.contains("bg-purple-500");
+
+        if (isFocusModeActive) {
+          endFocusMode();
+        } else {
+          startFocusMode();
+        }
+      }
+
+      function startFocusMode() {
+        document.getElementById("focusOverlay").classList.remove("hidden");
+        document
+          .getElementById("focusBtn")
+          .classList.add("bg-purple-500", "text-white");
+        document
+          .getElementById("focusBtn")
+          .classList.remove("bg-purple-100", "text-primary-600");
+
+        // Bloquer les distractions
+        document.body.classList.add("focus-mode");
+
+        // Démarrer le minuteur
+        let secondsLeft = 25 * 60; // 25 minutes par défaut
+        updateFocusTimerDisplay(secondsLeft);
+
+        focusInterval = setInterval(() => {
+          secondsLeft--;
+          updateFocusTimerDisplay(secondsLeft);
+
+          if (secondsLeft <= 0) {
+            endFocusMode();
+
+            // Notification
+            if (Notification.permission === "granted") {
+              new Notification("Mode Focus terminé", {
+                body: "Votre session de concentration est terminée. Prenez une pause !",
+                icon: "https://i.imgur.com/jW5ZKzJ.png",
+              });
+            }
+
+            // Ajouter XP et activité
+            gainXP(15);
+            focusSessions++;
+            addActivity("Session focus de 25 minutes", "focus");
+            updateStats();
+          }
+        }, 1000);
+      }
+
+      function endFocusMode() {
+        clearInterval(focusInterval);
+        document.getElementById("focusOverlay").classList.add("hidden");
+        document
+          .getElementById("focusBtn")
+          .classList.remove("bg-purple-500", "text-white");
+        document
+          .getElementById("focusBtn")
+          .classList.add("bg-purple-100", "text-primary-600");
+        document.body.classList.remove("focus-mode");
+      }
+
+      function updateFocusTimerDisplay(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        document.getElementById("focusTimer").textContent = `${minutes
+          .toString()
+          .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
+      }
+
+      // Fonctions de bien-être
+      function startBreathingExercise() {
+        const reminder = document.getElementById("wellnessReminder");
+        reminder.innerHTML = `
+          <div class="text-center">
+            <div class="breath-circle w-16 h-16 bg-blue-200 rounded-full mx-auto my-2 animate-pulse"></div>
+            <p class="text-sm">Inspirez profondément... puis expirez lentement</p>
+            <p class="text-xs text-gray-500 mt-1">Continuez pendant 1 minute</p>
+          </div>
+        `;
+
+        setTimeout(() => {
+          reminder.innerHTML =
+            '<p class="text-sm">👍 Excellent ! Vous devriez vous sentir plus détendu.</p>';
+          gainXP(5);
+        }, 60000);
+      }
+
+      function resetTimers() {
+        clearInterval(pomodoroInterval);
+        clearInterval(focusInterval);
+      }
+
+      // Événements
+      document
+        .getElementById("startPomodoroBtn")
+        .addEventListener("click", startPomodoro);
+      document
+        .getElementById("focusBtn")
+        .addEventListener("click", toggleFocusMode);
+      document
+        .getElementById("endFocusBtn")
+        .addEventListener("click", endFocusMode);
+      document
+        .getElementById("generateChallengeBtn")
+        .addEventListener("click", generateNewChallenge);
+
+      // Initialisation des tooltips
+      document.addEventListener("DOMContentLoaded", function () {
+        // Demander la permission pour les notifications
+        if (
+          Notification.permission !== "granted" &&
+          Notification.permission !== "denied"
+        ) {
+          Notification.requestPermission();
+        }
+      });
+    </script>
+  </body>
+</html>
